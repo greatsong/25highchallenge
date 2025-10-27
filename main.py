@@ -4,9 +4,9 @@ import tempfile
 import os
 import sys
 
-st.set_page_config(page_title="ABC 자동 채점기 (Sheets) — Final", page_icon="✅", layout="wide")
+st.set_page_config(page_title="알고리즘 기초 — 파이썬 자동 채점기", page_icon="✅", layout="wide")
 
-st.title("🧪 AtCoder ABC — 기초 파이썬 자동 채점기 + Google Sheets")
+st.title("알고리즘 기초 — 파이썬 자동 채점기 + Google Sheets")
 st.caption("※ 유저 코드: import/파일/네트워크/시스템 호출 금지. 앱은 Google Sheets에 점수를 기록합니다.")
 
 # =============================
@@ -42,7 +42,7 @@ def get_worksheet():
     try:
         ws = sh.worksheet(ws_name)
     except gspread.WorksheetNotFound:
-        ws = sh.add_worksheet(title=ws_name, rows=1000, cols=20)
+        ws = sh.add_worksheet(title=ws_name, rows=2000, cols=20)
     header = ["timestamp", "student_id", "name", "problem", "got_weight", "total_weight", "score", "version"]
     vals = ws.get_all_values()
     if not vals or not vals[0] or vals[0] != header:
@@ -50,6 +50,7 @@ def get_worksheet():
         ws.append_row(header)
     return ws
 
+# 정답/테스트 버전 태그 (변경 이력 관리)
 TESTS_VERSION = st.secrets.get("tests_version", "v1")
 
 st.markdown("---")
@@ -69,26 +70,28 @@ with info3:
 # 문제 정의 (미리보기만 포함) — 실제 테스트는 secrets에서 로드
 # =============================
 problems = {
-    "ABC081A": {
-        "name": "Placing Marbles (ABC081A)",
-        "statement": "3자리 문자열 s(각 문자 '0' 또는 '1')의 '1' 개수를 출력.",
+    "P01": {
+        "name": "Count the Ones",
+        "statement": (
+            "세 자리 이진 문자열 s(각 문자 '0' 또는 '1')가 주어진다. "
+            "s에 포함된 '1'의 개수를 출력한다. 입력은 한 줄이며, 출력은 정수 한 줄이다.\n"
+            "예) s=101 → 2."
+        ),
         "starter": """s = input().strip()
 # 여기에 코드를 작성하세요
-# 예:
-# cnt = 0
-# for ch in s:
-#     if ch == '1':
-#         cnt += 1
-# print(cnt)
 """,
         "preview": [
             {"in": "101\n", "out": "2\n"},
             {"in": "000\n", "out": "0\n"},
         ],
     },
-    "ABC081B": {
-        "name": "Shift only (ABC081B)",
-        "statement": "배열의 모든 원소가 홀수가 될 때까지 동시에 2로 나눌 수 있는 횟수.",
+    "P02": {
+        "name": "Divide by Two Game",
+        "statement": (
+            "정수 N과 길이 N의 배열 a가 주어진다. 모든 원소가 홀수가 될 때까지, "
+            "배열의 모든 원소를 동시에 2로 나누는 연산을 반복할 수 있다. 가능한 연산 횟수의 최댓값을 출력한다.\n"
+            "입력: 첫 줄 N, 둘째 줄 a1..aN. 출력: 정수 한 줄."
+        ),
         "starter": """n = int(input())
 a = list(map(int, input().split()))
 # 여기에 코드를 작성하세요
@@ -98,9 +101,12 @@ a = list(map(int, input().split()))
             {"in": "4\n5 6 8 10\n", "out": "0\n"},
         ],
     },
-    "ABC083B": {
-        "name": "Some Sums (ABC083B)",
-        "statement": "1..N에서 자릿수 합이 [A,B]인 수들의 총합.",
+    "P03": {
+        "name": "Digit Sum Filter",
+        "statement": (
+            "정수 N, A, B가 주어진다. 1부터 N까지의 모든 정수 중 자릿수 합이 A 이상 B 이하인 수를 모두 더한 결과를 출력한다. "
+            "자릿수 합은 정수를 10으로 나누며 나머지를 누적해 구한다."
+        ),
         "starter": """n, a, b = map(int, input().split())
 # 여기에 코드를 작성하세요
 """,
@@ -109,9 +115,12 @@ a = list(map(int, input().split()))
             {"in": "10 1 2\n", "out": "13\n"},
         ],
     },
-    "ABC085B": {
-        "name": "Kagami Mochi (ABC085B)",
-        "statement": "서로 다른 직경의 개수.",
+    "P04": {
+        "name": "Distinct Discs",
+        "statement": (
+            "정수 N과 N개의 직경 값이 주어진다. 같은 직경을 가진 디스크는 한 종류로 본다. "
+            "서로 다른 직경의 개수를 출력한다. 입력은 첫 줄 N, 이후 N줄에 각 직경. 출력은 정수 한 줄."
+        ),
         "starter": """n = int(input())
 # 이후 줄들에서 정수 n개를 입력받아 처리하세요
 """,
@@ -120,9 +129,11 @@ a = list(map(int, input().split()))
             {"in": "3\n1\n1\n1\n", "out": "1\n"},
         ],
     },
-    "ABC086A": {
-        "name": "Product (ABC086A)",
-        "statement": "두 수의 곱이 짝수면 Even, 홀수면 Odd.",
+    "P05": {
+        "name": "Parity of Product",
+        "statement": (
+            "두 정수 A, B가 주어진다. A×B가 짝수면 'Even', 홀수면 'Odd'를 출력한다. 출력은 대소문자에 유의한다."
+        ),
         "starter": """a, b = map(int, input().split())
 # 여기에 코드를 작성하세요
 """,
@@ -131,9 +142,12 @@ a = list(map(int, input().split()))
             {"in": "1 3\n", "out": "Odd\n"},
         ],
     },
-    "ABC117B": {
-        "name": "Polygon (ABC117B)",
-        "statement": "가장 긴 변 < 나머지 합이면 Yes, 아니면 No.",
+    "P06": {
+        "name": "Polygon Check",
+        "statement": (
+            "정수 N과 N개의 막대 길이가 주어진다. 가장 긴 막대의 길이가 나머지 막대 길이의 합보다 작으면 단순 다각형을 만들 수 있다. "
+            "만들 수 있으면 'Yes', 아니면 'No'를 출력한다. 정렬 없이도 합과 최댓값만으로 판정할 수 있다."
+        ),
         "starter": """n = int(input())
 L = list(map(int, input().split()))
 # 여기에 코드를 작성하세요
@@ -143,9 +157,13 @@ L = list(map(int, input().split()))
             {"in": "3\n1 2 3\n", "out": "No\n"},
         ],
     },
-    "ABC139B": {
-        "name": "Power Socket (ABC139B)",
-        "statement": "멀티탭을 연결해 소켓 수가 B개 이상이 될 때까지 필요한 멀티탭 개수.",
+    "P07": {
+        "name": "Power Strip Planner",
+        "statement": (
+            "한 멀티탭에는 구멍이 A개 있다. 벽에 첫 멀티탭을 꽂으면 사용 가능한 소켓 수는 A가 된다. "
+            "추가로 멀티탭을 연결할 때마다 연결에 1개를 쓰므로 소켓 수는 매번 A-1개씩 증가한다. "
+            "필요한 소켓이 B개 이상이 되기까지 필요한 멀티탭 개수를 구하라."
+        ),
         "starter": """a, b = map(int, input().split())
 # 여기에 코드를 작성하세요
 """,
@@ -154,9 +172,12 @@ L = list(map(int, input().split()))
             {"in": "2 5\n", "out": "4\n"},
         ],
     },
-    "ABC125A": {
-        "name": "Biscuit Generator (ABC125A)",
-        "statement": "t초 동안 A초마다 B개 생성 → 총 개수.",
+    "P08": {
+        "name": "Periodic Biscuits",
+        "statement": (
+            "매 A초마다 과자 B개가 만들어진다. 시간 T초 동안 만들어지는 과자의 총 개수를 출력한다. "
+            "생산은 정확히 A의 배수 시점에만 이루어진다고 가정한다."
+        ),
         "starter": """a, b, t = map(int, input().split())
 # 여기에 코드를 작성하세요
 """,
@@ -165,9 +186,13 @@ L = list(map(int, input().split()))
             {"in": "2 4 9\n", "out": "16\n"},
         ],
     },
-    "ABC104B": {
-        "name": "AcCepted (ABC104B)",
-        "statement": "첫 글자 'A', 가운데에 'C' 1개, 나머지는 모두 소문자면 AC, 아니면 WA.",
+    "P09": {
+        "name": "Pattern: Accepted or Not",
+        "statement": (
+            "문자열 s가 다음을 모두 만족하면 'AC', 아니면 'WA'를 출력한다: "
+            "(1) s의 첫 글자는 'A'이다. (2) s의 3번째 문자부터 끝에서 두 번째 문자 사이에 'C'가 정확히 1번 등장한다. "
+            "(3) 위 두 위치를 제외한 나머지 문자는 모두 소문자 알파벳이다."
+        ),
         "starter": """s = input().strip()
 # 여기에 코드를 작성하세요
 """,
@@ -176,9 +201,12 @@ L = list(map(int, input().split()))
             {"in": "ACoder\n", "out": "WA\n"},
         ],
     },
-    "ABC079C": {
-        "name": "Train Ticket (ABC079C)",
-        "statement": "4자리 사이에 + 또는 - 를 넣어 결과가 7이 되는 식 출력 (예: 1+2+2+2=7).",
+    "P10": {
+        "name": "Make Seven with Signs",
+        "statement": (
+            "네 자리 숫자 문자열 s가 주어진다. 인접한 자리 사이에 '+' 또는 '-'를 넣어 계산한 결과가 7이 되는 식을 하나 만들어라. "
+            "출력은 예를 들어 s=1222일 때 '1+2+2+2=7'처럼 등호와 함께 한 줄로 출력한다. 여러 해답이 있을 수 있으며, 입력의 네 자릿수 순서는 바뀌지 않는다."
+        ),
         "starter": """s = input().strip()
 # 여기에 코드를 작성하세요
 """,
@@ -197,7 +225,7 @@ problem_keys = list(problems.keys())
 with st.sidebar:
     st.header("문제 선택")
     key = st.selectbox(
-        "문제(번호)", options=problem_keys,
+        "문제", options=problem_keys,
         format_func=lambda k: f"{k} — {problems[k]['name']}",
     )
     st.markdown("---")
@@ -256,34 +284,28 @@ def has_dangerous(code_str: str) -> str:
 def norm_output(s: str, trim_ws: bool) -> str:
     if trim_ws:
         lines = [ln.strip() for ln in s.strip().splitlines() if ln.strip() != ""]
-        return "
-".join(lines)
+        return "\n".join(lines)
     return s.strip()
 
 # ----------------------------
 # 특수 채점기(문항별 커스텀 판정)
 # ----------------------------
 
-def custom_judge(problem_key: str, raw_input: str, user_out: str, trim_ws: bool) -> bool | None:
+def custom_judge(problem_key: str, raw_input: str, user_out: str, trim_ws: bool):
     """문항별 커스텀 채점 로직.
     True/False를 반환하면 그 결과를 사용하고, None이면 기본 문자열 비교로 돌아갑니다.
     """
-    # ABC079C: 임의의 올바른 식 허용
-    if problem_key == "ABC079C":
-        # 입력: 4자리 문자열
+    # P10: 여러 가능한 올바른 식 허용
+    if problem_key == "P10":
         s = norm_output(raw_input, trim_ws)
-        s = s.replace("
-", "").replace("
-", "")
+        s = s.replace("\n", "").replace("\r", "")
         if len(s) != 4 or not s.isdigit():
             return False
-        # 출력: (식)=7 형태 허용, 공백 무시
-        out = user_out.replace(" ", "").replace("	", "")
+        out = user_out.replace(" ", "").replace("\t", "")
         out = out.strip()
         if not out.endswith("=7"):
             return False
-        expr = out[:-2]  # '=7' 제거
-        # expr는 d o d o d o d, d: 한 자리 숫자, o: + 또는 -
+        expr = out[:-2]
         if len(expr) != 7:
             return False
         d0, o1, d1, o2, d2, o3, d3 = expr[0], expr[1], expr[2], expr[3], expr[4], expr[5], expr[6]
@@ -291,10 +313,8 @@ def custom_judge(problem_key: str, raw_input: str, user_out: str, trim_ws: bool)
             return False
         if any(not d.isdigit() for d in (d0, d1, d2, d3)):
             return False
-        # 입력과 자리수 일치 여부
         if [d0, d1, d2, d3] != list(s):
             return False
-        # 값 계산
         vals = [int(d0), int(d1), int(d2), int(d3)]
         ops = [o1, o2, o3]
         total = vals[0]
@@ -304,7 +324,6 @@ def custom_judge(problem_key: str, raw_input: str, user_out: str, trim_ws: bool)
             else:
                 total -= vals[i+1]
         return total == 7
-    # 커스텀 없음
     return None
 
 # =============================
@@ -313,7 +332,7 @@ def custom_judge(problem_key: str, raw_input: str, user_out: str, trim_ws: bool)
 col1, col2 = st.columns([1.3, 1])
 
 with col1:
-    st.subheader(f"{key} · {problems[key]['name']}")
+    st.subheader(f"{key} — {problems[key]['name']}")
     st.write(problems[key]["statement"]) 
 
     loaded_tests = load_tests_from_secrets(key)
@@ -379,14 +398,13 @@ def grade_and_collect(code: str, key: str):
                 proc = subprocess.run([sys.executable, user_py], input=inp, text=True, capture_output=True, timeout=float(time_limit))
                 out, err, rc = proc.stdout, proc.stderr, proc.returncode
                 status = "OK"
-
                 if rc != 0:
                     status = "RE(런타임 에러)"
                 else:
-                    # 🔎 커스텀 채점 우선 (ABC079C 등 다중 정답 허용)
+                    # 커스텀 채점 우선
                     cj = custom_judge(key, inp, out, whitespace_insensitive)
                     if cj is True:
-                        pass  # 정답 인정
+                        pass
                     elif cj is False:
                         status = "WA(틀렸습니다)"
                     elif norm_output(out, whitespace_insensitive) != norm_output(expected, whitespace_insensitive):
@@ -419,31 +437,30 @@ if run_btn or submit_btn:
             if r["에러"]:
                 st.markdown("**에러 메시지**"); st.code(r["에러"], language="text")
 
-    # 제출: Google Sheets 업서트
-    if submit_btn:
-        ws = get_worksheet()
-        if ws is None:
-            st.error("Google Sheets 설정이 완료되지 않았습니다. requirements 설치/Secrets를 확인하세요.")
+# 제출: Google Sheets 업서트
+if submit_btn:
+    ws = get_worksheet()
+    if ws is None:
+        st.error("Google Sheets 설정이 완료되지 않았습니다. requirements 설치/Secrets를 확인하세요.")
+    else:
+        import datetime
+        ts = datetime.datetime.utcnow().isoformat() + "Z"
+        row = [ts, student_id, student_name, key, str(got_weight), str(total_weight), str(score), str(TESTS_VERSION)]
+        all_vals = ws.get_all_values()
+        header = all_vals[0] if all_vals else []
+        idx_student = header.index("student_id") if "student_id" in header else 1
+        idx_problem = header.index("problem") if "problem" in header else 3
+        target_row = None
+        for i in range(1, len(all_vals)):
+            if all_vals[i][idx_student] == student_id and all_vals[i][idx_problem] == key:
+                target_row = i + 1
+                break
+        if target_row:
+            ws.update(f"A{target_row}:H{target_row}", [row])
+            st.success("기존 기록을 최신 기준으로 업데이트했습니다 (업서트).")
         else:
-            import datetime
-            ts = datetime.datetime.utcnow().isoformat() + "Z"
-            row = [ts, student_id, student_name, key, str(got_weight), str(total_weight), str(score), str(TESTS_VERSION)]
-            # 업서트 (student_id, problem) 기준)
-            all_vals = ws.get_all_values()
-            header = all_vals[0] if all_vals else []
-            idx_student = header.index("student_id") if "student_id" in header else 1
-            idx_problem = header.index("problem") if "problem" in header else 3
-            target_row = None
-            for i in range(1, len(all_vals)):
-                if all_vals[i][idx_student] == student_id and all_vals[i][idx_problem] == key:
-                    target_row = i + 1
-                    break
-            if target_row:
-                ws.update(f"A{target_row}:H{target_row}", [row])
-                st.success("기존 기록을 최신 정답 기준으로 업데이트했습니다 (업서트).")
-            else:
-                ws.append_row(row)
-                st.success("점수를 Google Sheets에 제출했습니다.")
+            ws.append_row(row)
+            st.success("점수를 Google Sheets에 제출했습니다.")
 
 st.markdown("---")
-st.caption("Tip: secrets의 각 테스트에 name/weight/hidden을 선택적으로 넣으면 운영이 편리합니다. tests_version 값으로 정답/테스트 변경 이력을 관리해요.")
+st.caption("Tip: secrets의 각 테스트에 name/weight/hidden을 선택적으로 넣으면 운영이 편리합니다. tests_version으로 정답/테스트 변경 이력을 관리하세요.")
