@@ -256,7 +256,8 @@ def has_dangerous(code_str: str) -> str:
 def norm_output(s: str, trim_ws: bool) -> str:
     if trim_ws:
         lines = [ln.strip() for ln in s.strip().splitlines() if ln.strip() != ""]
-        return "\n".join(lines)
+        return "
+".join(lines)
     return s.strip()
 
 # ----------------------------
@@ -271,11 +272,13 @@ def custom_judge(problem_key: str, raw_input: str, user_out: str, trim_ws: bool)
     if problem_key == "ABC079C":
         # 입력: 4자리 문자열
         s = norm_output(raw_input, trim_ws)
-        s = s.replace("\n", "").replace("\r", "")
+        s = s.replace("
+", "").replace("
+", "")
         if len(s) != 4 or not s.isdigit():
             return False
         # 출력: (식)=7 형태 허용, 공백 무시
-        out = user_out.replace(" ", "").replace("\t", "")
+        out = user_out.replace(" ", "").replace("	", "")
         out = out.strip()
         if not out.endswith("=7"):
             return False
@@ -376,20 +379,20 @@ def grade_and_collect(code: str, key: str):
                 proc = subprocess.run([sys.executable, user_py], input=inp, text=True, capture_output=True, timeout=float(time_limit))
                 out, err, rc = proc.stdout, proc.stderr, proc.returncode
                 status = "OK"
+
                 if rc != 0:
                     status = "RE(런타임 에러)"
                 else:
-                    # 커스텀 채점 우선
+                    # 🔎 커스텀 채점 우선 (ABC079C 등 다중 정답 허용)
                     cj = custom_judge(key, inp, out, whitespace_insensitive)
                     if cj is True:
-                        pass
+                        pass  # 정답 인정
                     elif cj is False:
                         status = "WA(틀렸습니다)"
                     elif norm_output(out, whitespace_insensitive) != norm_output(expected, whitespace_insensitive):
                         status = "WA(틀렸습니다)"
-                    status = "WA(틀렸습니다)"
-                else:
-                    got_weight += weight
+                    else:
+                        got_weight += weight
                 results.append({"idx": idx, "name": name, "판정": status, "가중치": weight, "입력": inp, "기대 출력": expected, "내 출력": out, "에러": err})
             except subprocess.TimeoutExpired:
                 results.append({"idx": idx, "name": name, "판정": "TLE(시간 초과)", "가중치": weight, "입력": inp, "기대 출력": expected, "내 출력": "", "에러": "시간 제한 초과"})
